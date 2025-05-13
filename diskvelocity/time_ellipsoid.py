@@ -14,6 +14,20 @@ import sys
 sys.path.append('../ellipsoid')
 import model_tensor1
 rad = np.pi / 180
+alphabet = 'abcdefghijklmnopqrstuv'
+lincol = ['#66c2a5', '#fc8d62', '#8da0cb', '#e78ac3', '#a6d854', '#ffd92f']
+
+def get_mfp(n):
+    """
+    calculate the mean free path
+
+    n : ndarray
+        number density in particles per cm^3
+    """
+    # collision cross section in cm^2
+    sig = 2e-15 # H2
+
+    return 1. / n / sig
 
 def plot1(r, t_kep, t_d, t_o):
     """
@@ -33,59 +47,83 @@ def plot1(r, t_kep, t_d, t_o):
     ax.set_title('Timescales')
     ax.legend()
 
+    xticklabels = [1, 10, 100]
+    ax.set_xticklabels(xticklabels)
+
     fig.tight_layout()
     plt.show()
 
-def plot2(r, t_kep, t_d, t_o, ang, St, v, d_vr, d_vphi):
+def plot_column(r, t_kep, t_d, t_o, ang, St, v, d_vr, d_vphi, mfp, figname=None):
     """
-    row 1: time
-    row 2: angle
-    row 3: St
+    plot things in a colum
+
+    row 1: St
+    row 2: gas wind
+    row 3: time
     """
-    fig, axgrid = plt.subplots(2,2, sharex=True,sharey=False,
-            squeeze=False, figsize=(8,5))
+    nrow, ncol, figsize = 4, 1, (5, 10)
+#    nrow, ncol, figsize = 2, 2, (8, 5)
+    fig, axgrid = plt.subplots(nrow,ncol, sharex=True,sharey=False,
+            squeeze=False, figsize=figsize)
     axes = axgrid.flatten()
 
     pltx = r / au
 
+    # mfp
     ax = axes[0]
-#    ax.plot(pltx, t_kep/year, 'k:', label='Keplerian')
-#    ax.plot(pltx, t_d/year, 'k', label='damping')
-#    ax.plot(pltx, t_o/year, 'k--', label='oscillation')
-#    ax.set_ylabel('time [year]')
-
-    ax.plot(pltx, t_d/t_kep, 'k', label='damping')
-#    ax.plot(pltx, t_o/t_kep, 'k--', label='oscillation')
-    ax.set_ylabel('t_d / t_kep')
-
+    ax.plot(pltx, mfp, color='k', lw=2)
     ax.set_yscale('log')
-    ax.legend()
-
-    # angle
-    ax = axes[1]
-    ax.plot(pltx, ang)
-    ax.set_ylabel('polarization angle')
+    ax.set_ylabel(r'$\lambda_{mfp}$ [cm]')
 
     # St
-    ax = axes[2]
-    ax.plot(pltx, St)
+    ax = axes[1]
+    ax.plot(pltx, St, color='k', lw=2, label='St')
     ax.set_yscale('log')
     ax.set_ylabel('St')
 
+    # angle
+#    ax = axes[1]
+#    ax.plot(pltx, ang)
+#    ax.set_ylabel('polarization angle')
+
     # drift velocity
-    ax = axes[3]
-    ax.plot(pltx, v, 'k', lw=2, label='v')
-    ax.plot(pltx, d_vr, label=r'$\delta v_{R}$')
-    ax.plot(pltx, -d_vphi, label=r'-$\delta v_{\phi}$')
+    ax = axes[2]
+    ax.plot(pltx, v, color='k', lw=2, label=r'$A$')
+    ax.plot(pltx, abs(d_vr), color=lincol[0], linestyle='--', label=r'|$A_{R}$|')
+    ax.plot(pltx, abs(d_vphi), color=lincol[1], linestyle=':', label=r'|$A_{\Phi}$|')
     ax.set_yscale('log')
-    ax.set_ylabel('wind [cm/s]')
+    ax.set_ylabel(r'$A$ [cm/s]')
+    ax.legend(loc='lower right')
+
+    # time
+    ax = axes[-1]
+    ax.plot(pltx, t_kep/year, 'k:', label='Keplerian', lw=2)
+    ax.plot(pltx, t_d/year, 'k', label='damping', lw=2)
+    ax.plot(pltx, t_o/year, 'k--', label='oscillation', lw=2)
+    ax.set_ylabel('time [year]')
+
+    ax.set_yscale('log')
     ax.legend()
 
     # xlabel
-    ax.set_xlabel('r [au]')
+    ax = axes[-1]
+    ax.set_xlabel('R [au]')
     ax.set_xscale('log')
+    ax.set_xlim(pltx[0], pltx[-1])
+    xticks = [1, 10, 100]
+    ax.set_xticks(xticks, labels=['{:d}'.format(itick) for itick in xticks])
+
+    # plot labels
+    for i, ax in enumerate(axes):
+        txt = '({:s})'.format(alphabet[i])
+        ax.text(0.02, 0.98, txt, color='k', va='top', ha='left',
+                transform=ax.transAxes)
 
     fig.tight_layout()
+
+    if figname is not None:
+        fig.savefig(figname)
+
     plt.show()
 
 def main():
@@ -125,9 +163,23 @@ def main():
     coef = model_tensor1.coefficients(rho_g, vth, v, c, abar, rho_s, gbar)
     time = model_tensor1.timescales(coef['I'], coef['D'], coef['K'])
 
+    # mean free path
+    n_g = rho_g / 2.3 / natconst.mp
+    mfp = get_mfp(n_g)
+
     # ==== plotting ====
-    plot1(r, t_kep, time['t_d'], time['t_o'])
-    plot2(r, t_kep, time['t_d'], time['t_o'], ang, St, v, d_vr, d_vphi)
+#    plot1(r, t_kep, time['t_d'], time['t_o'])
+
+    figname = 'results/time_profile_spheroid.pdf'
+    plot_column(r, t_kep, time['t_d'], time['t_o'], ang, St, v, d_vr, d_vphi, mfp, figname=figname)
+
+    # ==== print info ====
+    # surface density
+    sig0 = disk.surface_density(1 * au)
+    print('sig0 = %f'%(sig0))
+
+    # beta
+    print('beta = %f'%beta[0])
     pdb.set_trace()
 
 if __name__ == '__main__':

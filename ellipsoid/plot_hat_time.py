@@ -55,7 +55,7 @@ def plot1(abar, gbar, tdamp, tosc, figname=None):
 
     ax.set_xscale('log')
     ax.set_yscale('log')
-    ax.set_ylabel(r'$\hat{t}_{d,s}$')
+    ax.set_ylabel(r'$\breve{t}_{d,s}$')
     ax.legend()
 
     # plot oscillation time
@@ -73,7 +73,7 @@ def plot1(abar, gbar, tdamp, tosc, figname=None):
 
     ax.set_xscale('log')
     ax.set_yscale('log')
-    ax.set_ylabel(r'$\hat{t}_{o,s}$')
+    ax.set_ylabel(r'$\breve{t}_{o,s}$')
     ax.legend()
 
     for i, ax in enumerate(axes):
@@ -103,7 +103,7 @@ def main():
     # environmental inputs
     # these actually don't matter, since we'll normalize it later
     rho_g = 1e-15
-    T = 50 # [Kelvin]
+    T = 100 # [Kelvin]
     vth = np.sqrt(8 * natconst.kk * T / np.pi / natconst.mp)
     dv = 0.1 # [cm/s]
 

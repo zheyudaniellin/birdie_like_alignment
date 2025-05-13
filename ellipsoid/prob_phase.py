@@ -78,6 +78,8 @@ def main():
     ax2.set_ylabel(r'$\omega / \omega_{T}$')
 
     fig.set_size_inches(12, 7)
+
+    figname = 'results/spheroid_phase_portrait.pdf'
     plt.show()
 
     pdb.set_trace()

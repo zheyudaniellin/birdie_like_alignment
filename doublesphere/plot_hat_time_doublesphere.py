@@ -17,25 +17,25 @@ def plot1(epsilon, kappa, hat_t_d, hat_t_o, hat_v_t, figname=None):
     # plot damping time
     ax = axes[0]
     for i in range(len(kappa)):
-        label = r'$\kappa$={:.1f}'.format(kappa[i])
+        label = r'$\kappa$={:.2f}'.format(kappa[i])
         ax.plot(epsilon, hat_t_d[:,i], label=label, color=lincol[i], 
                 linewidth=2)
 
 #    ax.set_xscale('log')
 #    ax.set_yscale('log')
-    ax.set_ylabel(r'$\hat{t}_{d,d}$')
+    ax.set_ylabel(r'$\breve{t}_{d,d}$')
     ax.legend(loc='center right')
 
     # plot oscillation time
     ax = axes[1]
     for i in range(len(kappa)):
-        label = r'$\kappa$={:.1f}'.format(kappa[i])
+        label = r'$\kappa$={:.2f}'.format(kappa[i])
         ax.plot(epsilon, hat_t_o[:,i], label=label, color=lincol[i], 
                 linewidth=2)
 
 #    ax.set_xscale('log')
     ax.set_yscale('log')
-    ax.set_ylabel(r'$\hat{t}_{o,d}$')
+    ax.set_ylabel(r'$\breve{t}_{o,d}$')
     ax.legend()
 
     for i, ax in enumerate(axes):
@@ -62,7 +62,7 @@ def main():
             np.geomspace(1, 1.1, 50, endpoint=False), 
             np.linspace(1.1, 1.5, 50)
             ))
-    kappa = np.array([1, 1.1, 1.5])
+    kappa = np.array([1, 1.01, 1.1, 1.5])
 
     # ==== calculations ====
     coef = doublesphere.coefficients(l, rhos, epsilon[:,None], kappa[None,:], lam, rhog, vth, v)

@@ -36,16 +36,20 @@ def plot1(psi, abar, aln, figname=None):
 
     plt.show()
 
-def plot2(psi, abar, aln, aln_gbar, figname=None):
+def plot2(psi, abar, aln, aln_gbar, acol, figname=None):
     """
     plot the alignment angle and also the angle for g
+
+    acol : list of text
+        the colors that correspond to different abar
     """
     fig, axes = plt.subplots(2, 1, figsize=(5,8), squeeze=True)
 
+    # theta align as a function of gbar
     ax = axes[0]
     for i in range(len(abar)):
         label = r'$\bar{a}$=%.1f'%abar[i]
-        ax.plot(psi, aln[i,:], label=label, color=lincol[i], linewidth=2)
+        ax.plot(psi, aln[i,:], label=label, color=acol[i], linewidth=2)
 
     ax.set_xlabel(r'$\psi$ [$^{\circ}$]')
     ax.set_xlim(0, 90)
@@ -56,15 +60,22 @@ def plot2(psi, abar, aln, aln_gbar, figname=None):
     ax.set_yticks(np.arange(-90, 1, 15))
 
     # plot a diagonal
-    ax.plot([0,90], [0, -90], color='k', linestyle=':')
+#    ax.plot([0,90], [0, -90], color='k', linestyle=':')
 
     ax.legend(loc='lower left')
 
-    # gbar
+    # text to see which side is the prolate vs oblate
+    # they happen to split along the diagonal
+    ax.text(0.5, 0.02, 'oblate', va='bottom', ha='left',
+            transform=ax.transAxes)
+    ax.text(0.98, 0.5, 'prolate', va='center', ha='right', 
+            transform=ax.transAxes)
+
+    # plot theta_g as a function of gbar
     ax = axes[1]
     for i in range(len(abar)):
         label = r'$\bar{a}$=%.1f'%abar[i]
-        ax.plot(psi, aln_gbar[i,:], label=label, color=lincol[i], linewidth=2)
+        ax.plot(psi, aln_gbar[i,:], label=label, color=acol[i], linewidth=2)
 
     ax.set_xlabel(r'$\psi$ [$^{\circ}$]')
     ax.set_xlim(0, 90)
@@ -73,6 +84,12 @@ def plot2(psi, abar, aln, aln_gbar, figname=None):
     ax.set_ylabel(r'$\theta_{\text{g}}$ [$^{\circ}$]')
 #    ax.set_ylim(-90, 0)
 #    ax.set_yticks(np.arange(-90, 1, 15))
+
+    # text to see which side is the prolate vs oblate
+    ax.text(0.98, 0.02, 'oblate', va='bottom', ha='right', 
+            transform=ax.transAxes)
+    ax.text(0.02, 0.98, 'prolate', va='top', ha='left',
+            transform=ax.transAxes)
 
     # labels
     for i, ax in enumerate(axes):
@@ -90,6 +107,7 @@ def plot2(psi, abar, aln, aln_gbar, figname=None):
 def main():
     # ==== settings ====
     abar = np.array([0.5, 0.9, 1, 1.1, 2])
+    acol = ['#66c2a5', '#fc8d62', 'k', '#e78ac3', '#a6d854']
     psi = np.linspace(0, 90, 50)
 
     rhog = 1
@@ -119,7 +137,7 @@ def main():
     figname = 'results/theta_align.pdf'
 #    plot1(psi, abar, aln, figname=figname)
 
-    plot2(psi, abar, aln, aln_gbar, figname=figname)
+    plot2(psi, abar, aln, aln_gbar, acol, figname=figname)
 
 
 if __name__ == '__main__':

@@ -19,13 +19,14 @@ minute = hour / 60
 
 # ==== parameters ====
 # gas drift
-v = 20e2 # [cm/s]
+v = 10e2 # [cm/s]
 
 # gas density
-rho_g = 1e-15 # [g / cm^3]
+#rho_g = 1e-15 # [g / cm^3]
+rho_g = 1e9 * 2.3 * natconst.mp
 
 # thermal velocity
-vth = 200e2 # [cm/s]
+vth = 1e5 # [cm/s]
 
 # grain size
 l = 1e-1 # [cm]
@@ -34,7 +35,7 @@ l = 1e-1 # [cm]
 rho_s = 3.0 # [g / cm^3]
 
 # temperature
-T = 20 # [K]
+T = 100 # [K]
 
 # ==== calculations ====
 # stopping time

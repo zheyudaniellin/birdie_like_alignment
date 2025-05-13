@@ -12,7 +12,7 @@ def get_v_g_r(alpha, hr, vk):
     """
     gas velocity in the radial direction
     """
-    return - 1.5 * alpha * hr**2 * vk
+    return - alpha * hr**2 * vk
 
 def get_v_g_phi(beta, hr, vk):
     """
@@ -35,7 +35,7 @@ def rel_v_r(St, alpha, beta, hr, vk):
     vk : float, ndarray
         the keplerian velocity
     """
-    diff = - (1.5 * alpha * St + beta) / (St + 1./St) * hr**2 * vk
+    diff = - (alpha * St + beta) / (St + 1./St) * hr**2 * vk
     return diff
 
 def rel_v_phi(St, alpha, beta, hr, vk):
@@ -47,7 +47,7 @@ def rel_v_phi(St, alpha, beta, hr, vk):
     beta : float, ndarray
         the pressure gradient d ln P / d ln r
     """
-    diff = 0.5 * (-1.5*alpha + beta * St) / (St + 1./St) * hr**2 * vk
+    diff = 0.5 * (-alpha + beta * St) / (St + 1./St) * hr**2 * vk
     return diff
 
 # ==== dust velocity ====

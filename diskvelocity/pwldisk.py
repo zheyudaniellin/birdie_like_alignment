@@ -10,13 +10,14 @@ import natconst
 from natconst import au
 
 # shared parameters
-par = {'ms':0.5 * natconst.ms, 
-       'mdisk':0.005 * natconst.ms, 
+par = {'ms':0.5* natconst.ms, 
        'rin':0.1*au, 
        'rout':100*au, 
        'q':0.5, 
        'p':1.0, 
         }
+
+par['mdisk'] = par['ms'] * 0.05
 
 # disk radial profiles
 def temperature(r):

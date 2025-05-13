@@ -13,27 +13,94 @@ rad = np.pi / 180
 # =========================================================
 # integration constants 
 # =========================================================
+def afn_E_0(abar):
+    """
+    analytical function for E[1]
+
+    abar : float
+    """
+    if 0 < abar < 1:
+        e = np.sqrt(1 - abar**2)
+        res = 2 * np.arcsin(e) / e
+    elif abar == 1:
+        res = 2
+    elif abar > 1:
+        f = np.sqrt(abar**2 - 1)
+        res = 2 * np.arcsinh(f) / f
+    else:
+        raise ValueError('abar unknown')
+    return res
+
+def afn_E_2(abar):
+    """
+    analytical function for E[x^2]
+    """
+    if 0 < abar < 1:
+        e = np.sqrt(1 - abar**2)
+        res = - np.sqrt(1 - e**2) / e**2 + np.arcsin(e) / e**3
+    elif abar == 1:
+        res = 2/3.
+    elif abar > 1:
+        f = np.sqrt(abar**2 - 1)
+        res = np.sqrt(1 + f**2) / f**2 - np.arcsinh(f) / f**3
+    else:
+        raise ValueError('abar unknown')
+    return res
+
+
+def afn_E_4(abar):
+    """
+    analytical solution to E[x^4]
+    """
+    if 0 < abar < 1:
+        e = np.sqrt(1 - abar**2)
+        res = - np.sqrt(1 - e**2) * (2 * e**2 + 3) / 4 / e**4 + 3 * np.arcsin(e) / 4 / e**5
+    elif abar == 1:
+        res = 2/5.
+    elif abar > 1:
+        f = np.sqrt(abar**2 - 1)
+        res = np.sqrt(1 + f**2) * (2 * f**2 - 3) / 4 / f**4 + 3 * np.arcsinh(f) / 4 / f**5
+    else:
+        raise ValueError('abar unknown')
+    return res
+
+
 def fn_H(x, abar=1):
     """
     the function for integration
+    E[1 - x^2]
     """
     return (1 - x**2) / np.sqrt(1 + (abar**2 - 1) * x**2)
 
-def get_H(abar):
+def get_H(abar, mode='analytical'):
     """
     use integratation
     let this function take multidimensional inputs
+
+    E[1 - x^2]
     """
     # check if the input is a numpy array
     if type(abar) == np.ndarray:
         out = np.zeros_like(abar.flatten())
+
         for i, _abar in enumerate(abar):
-            res = quad(fn_H, -1, 1, args=_abar)
-            out[i] = res[0]
+            if mode == 'numerical':
+                res = quad(fn_H, -1, 1, args=_abar)
+                out[i] = res[0]
+            elif mode == 'analytical':
+                out[i] = afn_E_0(_abar) - afn_E_2(_abar)
+            else:
+                raise ValueError('mode unknown')
+
         out = np.reshape(out, abar.shape)
     else:
-        res = quad(fn_H, -1, 1, args=abar)
-        out = res[0]
+        if mode == 'numerical':
+            res = quad(fn_H, -1, 1, args=abar)
+            out = res[0]
+        elif mode == 'analytical':
+            out = afn_E_0(abar) - afn_E_2(abar)
+        else:
+            raise ValueError('mode unknown')
 
     return out
 
@@ -43,19 +110,28 @@ def fn_L(x, abar=1):
     """
     return (1 - x**2) * x**2 / np.sqrt(1 + (abar**2 - 1) * x**2)
 
-def get_L(abar):
+def get_L(abar, mode='analytical'):
     """
+    E[x^2 - x^4]
     """
     # check if the input is a numpy array
     if type(abar) == np.ndarray:
         out = np.zeros_like(abar.flatten())
         for i, _abar in enumerate(abar):
-            res = quad(fn_L, -1, 1, args=_abar)
-            out[i] = res[0]
+            if mode == 'numerical':
+                res = quad(fn_L, -1, 1, args=_abar)
+                out[i] = res[0]
+            elif mode == 'analytical':
+                out[i] = afn_E_2(_abar) - afn_E_4(_abar)
         out = np.reshape(out, abar.shape)
     else:
-        res = quad(fn_L, -1, 1, args=abar)
-        out = res[0]
+        if mode == 'numerical':
+            res = quad(fn_L, -1, 1, args=abar)
+            out = res[0]
+        elif mode == 'analytical':
+            out = afn_E_2(abar) - afn_E_4(abar)
+        else:
+            raise ValueError('mode unknown')
 
     return out
 
@@ -106,10 +182,10 @@ def coefficients(rhog, vth, v, c, abar, rhos, gbar):
     I = get_I(c, abar, rhos, g)
 
     # calculate D
-    D = 2 * rhog * vth * np.pi * a * c * (g**2 * H + c**2 * (1 - abar**2)**2 * L)
+    D = rhog * vth * np.pi * a * c * (g**2 * H + c**2 * (1 - abar**2)**2 * L)
 
     # calculate K
-    K = 2 * rhog * vth * v * np.pi * a * c * H * g
+    K = rhog * vth * v * np.pi * a * c * H * g
 
     return {'I':I, 'D':D, 'K':K}
 
@@ -127,6 +203,12 @@ def timescales(I, D, K):
     t_o = 2 * np.pi / w_o
 
     return {'t_d':t_d, 't_o':t_o, 'w_o':w_o}
+
+def other_timescales(rhog, vth, v, c, rhos):
+    t_stop = rhos / rhog * c / vth
+    t_osc_c = np.sqrt(rhos * c**2 / rhog / v / vth)
+
+    return {'t_stop':t_stop, 't_osc_c':t_osc_c}
 
 def main():
     """

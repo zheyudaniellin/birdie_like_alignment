@@ -23,11 +23,12 @@ def plot_grid(St, alpha, v_g_r, v_g_phi, v_d_r, v_d_phi, d_vr, d_vphi,
     """
     # angle of the drift velocity
     ang = diskvel_alpha.get_angle(d_vr, d_vphi)
-    ang = np.mod(ang, np.pi)
+
+    dv = np.sqrt(d_vr**2 + d_vphi**2)
 
     nrow, ncol = 4, len(beta)
     fig, axgrid = plt.subplots(nrow,ncol,sharex=True,sharey='row',
-            squeeze=False, figsize=(12,8))
+            squeeze=False, figsize=(5,8))
     axes = axgrid.flatten()
 
     lw = 2
@@ -36,15 +37,16 @@ def plot_grid(St, alpha, v_g_r, v_g_phi, v_d_r, v_d_phi, d_vr, d_vphi,
     # iterate through alpha
     for i, _beta in enumerate(beta):
         # radial direction
-        ax = axgrid[0,i]
+        ax = axgrid[1,i]
         norm = hr**2 * vk
+        ax.axhline(0, color='k', linestyle=':')
         ax.axhline(v_g_r/norm, color=gas_color, label='gas', 
                 linewidth=lw)
         ax.plot(St, v_d_r[:,i]/norm, color=dust_color, label='dust', 
                 linewidth=lw)
 
         # azimuthal direction
-        ax = axgrid[1,i]
+        ax = axgrid[0,i]
         norm = hr**2 * vk
         ax.axhline((v_g_phi[i]-vk)/norm, color=gas_color, label='gas', 
                 linewidth=lw)
@@ -55,10 +57,11 @@ def plot_grid(St, alpha, v_g_r, v_g_phi, v_d_r, v_d_phi, d_vr, d_vphi,
         # gas wind
         ax = axgrid[2,i]
         norm = hr**2 * vk
-        ax.plot(St, d_vr[:,i]/norm, label=r'$\delta v_{r}$', color='k', 
-                linestyle='--', linewidth=lw)
-        ax.plot(St, d_vphi[:,i]/norm, label=r'$\delta v_{\phi}$', color='k', 
-                linewidth=lw)
+        ax.plot(St, d_vr[:,i]/norm, label=r'$A_{R}$', color='k', 
+                linestyle='-.', linewidth=lw)
+        ax.plot(St, d_vphi[:,i]/norm, label=r'$A_{\Phi}$', color='k', 
+                linewidth=lw, linestyle='--')
+        ax.plot(St, dv[:,i]/norm, label=r'$A$', color='k', linestyle='-', linewidth=lw)
         ax.axhline(0, color='k', linestyle=':')
 
         # alignment angle
@@ -66,7 +69,8 @@ def plot_grid(St, alpha, v_g_r, v_g_phi, v_d_r, v_d_phi, d_vr, d_vphi,
         norm = rad
         ax.plot(St, ang[:,i]/norm, color='k', linewidth=lw)
 
-        ax.axhline(-90, color='k', linestyle=':')
+        for ival in [-180, -90]:
+            ax.axhline(ival, color='k', linestyle=':')
 
     # xscale
     for ax in axes:
@@ -74,31 +78,32 @@ def plot_grid(St, alpha, v_g_r, v_g_phi, v_d_r, v_d_phi, d_vr, d_vphi,
         ax.set_xlim(St[0], St[-1])
 
     # legends
-    axgrid[0,0].legend(loc='lower right')
+    axgrid[0,0].legend(loc='center right')
     axgrid[1,0].legend(loc='center right')
-    axgrid[2,0].legend(loc='upper right')
+    axgrid[2,0].legend(loc='lower left')
 
     # x labels
     for ax in axgrid[-1,:]:
         ax.set_xlabel('St')
 
     # y labels
-    axgrid[0,0].set_ylabel(r'$v_{r}$'+'\n'+r'[$(H/R)^{2}$ $v_{K}$]')
-    axgrid[1,0].set_ylabel(r'$v_{\phi}-v_{K}$'+'\n'+r'[$(H/R)^{2}$ $v_{K}$]')
-    axgrid[2,0].set_ylabel(r'Gas Wind'+'\n'+r'[$(H/R)^{2}$ $v_{K}$]')
+    axgrid[0,0].set_ylabel(r'$v_{\Phi}-v_{K}$'+'\n'+r'[$(H/R)^{2}$ $v_{K}$]')
+    axgrid[1,0].set_ylabel(r'$v_{R}$'+'\n'+r'[$(H/R)^{2}$ $v_{K}$]')
+    axgrid[2,0].set_ylabel(r'$A$'+'\n'+r'[$(H/R)^{2}$ $v_{K}$]')
     axgrid[3,0].set_ylabel(r'$\chi$'+'\n'+r'[$^{\circ}$]')
 
     for i, ax in enumerate(axgrid[0,:]):
-        ax.set_title(r'$\beta$=%.2f'%beta[i])
+        ax.set_title(r'$\beta$ = %.1f'%beta[i])
 
     # additional modification for wind angle
-#    for ax in axgrid[-1,:]:
-#        ax.set_yticks(np.arange(-105, 1, 15))
+    for ax in axgrid[-1,:]:
+        ax.set_yticks(np.arange(-180, -89, 15))
 
     # move the ylim a bit for the labels
 #    axgrid[0,0].set_ylim(None, 0.2)
-#    axgrid[1,0].set_ylim(None, 0.1)
-#    axgrid[-1,0].set_ylim(None, 15)
+    axgrid[1,0].set_ylim(None, 0.0015)
+    axgrid[2,0].set_ylim(None, None)
+    axgrid[3,0].set_ylim(None, -78)
 
     # plot labels
     for i, ax in enumerate(axes):
@@ -117,7 +122,7 @@ def main():
     # ==== settings ====
     hr = 0.1
     ms = 1 * natconst.ms
-    St = np.geomspace(1e-3, 1e3, 50)
+    St = np.geomspace(1e-3, 1e3, 100)
 
     alpha = 0.01
     beta = np.array([0.0])
@@ -138,8 +143,7 @@ def main():
     v_d_phi = diskvel_alpha.get_v_d_phi(St[:,None], alpha, beta[None,:], hr, vk)
     
     # ==== plotting ====
-#    figname = 'results/St_alpha_grid.pdf'
-    figname = None
+    figname = 'results/St_beta_grid.pdf'
     plot_grid(St, alpha, v_g_r, v_g_phi, v_d_r, v_d_phi, d_vr, d_vphi, beta, hr, vk, figname=figname)
 
 if __name__ == '__main__':

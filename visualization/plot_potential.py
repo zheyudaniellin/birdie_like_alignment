@@ -19,7 +19,7 @@ def main():
 
     # add the potential range
     ax.errorbar([thet[-1]+5],[0], yerr=[K], color='C1', capsize=5, linewidth=2)
-    ax.text(thet[-1], 0, r'$2K$', ha='right', va='center')
+    ax.text(thet[-1], 0, r'$2P$', ha='right', va='center')
 
     # x-axis
     ax.set_xticks(np.arange(thet[0], thet[-1]+1, 90))

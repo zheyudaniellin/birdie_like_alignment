@@ -102,17 +102,17 @@ def coefficients(rhog, vth, v, c, abar, rhos, g, psi=0):
     I = get_I(c, abar, rhos, g)
 
     # calculate D
-    D = 2 * rhog * vth * np.pi * a * c * (
+    D = rhog * vth * np.pi * a * c * (
             g**2 * H * np.cos(psi)**2 
             + g**2 * (2 * abar**2 * W) * np.sin(psi)**2 
             + c**2 * (1 - abar**2)**2 * L
             )
 
     # calculate Ks
-    Ks = 2 * rhog * vth * v * np.pi * a * c * H * g * np.cos(psi)
+    Ks = rhog * vth * v * np.pi * a * c * H * g * np.cos(psi)
 
     # calculate Kc
-    Kc = 2 * rhog * vth * v * np.pi * a * c * (2*abar**2*W) * g * np.sin(psi)
+    Kc = rhog * vth * v * np.pi * a * c * (2*abar**2*W) * g * np.sin(psi)
 
     return {'I':I, 'D':D, 'Ks':Ks, 'Kc':Kc}
 
